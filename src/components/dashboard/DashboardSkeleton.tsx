@@ -1,7 +1,7 @@
 import React from "react";
 
 interface DashboardSkeletonProps {
-  role?: "warga" | "admin";
+  role?: "warga" | "admin" | "kurir";
 }
 
 export default function DashboardSkeleton({ role = "warga" }: DashboardSkeletonProps) {

@@ -20,6 +20,20 @@ export const weeklyLeaderboard = [
     badge: "🥉",
     rank: 3,
   },
+  {
+    name: "Budi Santoso",
+    points: 220,
+    category: "Plastik PET Gelas & Botol",
+    badge: "4",
+    rank: 4,
+  },
+  {
+    name: "Ahmad Fauzi",
+    points: 165,
+    category: "Sampah Organik Bersih",
+    badge: "5",
+    rank: 5,
+  },
 ];
 
 export const monthlyLeaderboard = [
@@ -43,5 +57,19 @@ export const monthlyLeaderboard = [
     category: "Kardus & Kertas",
     badge: "🥉",
     rank: 3,
+  },
+  {
+    name: "Ahmad Fauzi",
+    points: 890,
+    category: "Sampah Organik Bersih",
+    badge: "4",
+    rank: 4,
+  },
+  {
+    name: "Lestari Widodo",
+    points: 650,
+    category: "Layanan E-Waste Khusus",
+    badge: "5",
+    rank: 5,
   },
 ];

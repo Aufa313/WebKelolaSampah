@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { landingFaq } from "../data/faq";
+import { landingFaq } from "../../data/faq";
 
 export default function LandingFaq() {
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);

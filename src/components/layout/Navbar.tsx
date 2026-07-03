@@ -176,7 +176,7 @@ export default function Navbar({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className={`text-xl md:text-2xl font-bold tracking-tight select-none transition-colors ${
-                  isLoggedIn && userRole === "admin" ? "text-amber-800" : "text-[#008444]"
+                  isLoggedIn && userRole === "admin" ? "text-amber-805" : "text-[#008444]"
                 }`} style={{ fontFamily: "Georgia, serif" }}>
                   Lengkang UI
                 </span>
@@ -346,7 +346,7 @@ export default function Navbar({
                     className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors text-left ${
                       isSelected
                         ? isLoggedIn && userRole === "admin"
-                          ? "bg-amber-50 text-amber-805 font-bold"
+                          ? "bg-amber-50 text-amber-855 font-bold"
                           : "bg-emerald-50/70 text-primary font-bold"
                         : "text-slate-600 hover:bg-slate-50 font-medium text-xs"
                     }`}

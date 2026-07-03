@@ -33,4 +33,20 @@ export const pricingData: Record<
     color: "bg-slate-500",
     desc: "Kaleng minuman soda, tembaga, kabel tembaga rusak, besi tua.",
   },
+  organik: {
+    label: "Sampah Organik Bersih",
+    points: 50,
+    rupiah: 1000,
+    co2Factor: 0.6,
+    color: "bg-emerald-600",
+    desc: "Sisa sayuran rumah tangga, sisa buah, daun kering gugur.",
+  },
+  elektronik: {
+    label: "Layanan E-Waste Khusus",
+    points: 350,
+    rupiah: 8000,
+    co2Factor: 4.8,
+    color: "bg-purple-600",
+    desc: "Baterai bekas, charger rusak, keyboard, motherboard mati.",
+  },
 };
