@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #008444;
+  --color-primary-hover: #006633;
+  --color-neutral-dark: #1e293b;
+  --color-neutral-light: #f8fafc;
+  
+  --font-serif: "Playfair Display", "Lora", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+:root {
+  --primary: #008444;
+  --primary-hover: #006633;
+  --neutral-dark: #1e293b;
+  --neutral-light: #f8fafc;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--neutral-dark);
+  background-color: #fcfdfc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom layout utility helper */
+h1, h2, h3, h4, .font-serif-header {
+  font-family: var(--font-serif);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth GPU-accelerated spin animation using cubic-bezier easing */
+@keyframes spin-smooth {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-smooth {
+  animation: spin-smooth 65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transition: animation-duration 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  /* Offset radial mask: as the dashing circle spins, segments dynamically fade in at the top and out at the bottom */
+  -webkit-mask-image: radial-gradient(circle at 50% 25%, black 20%, rgba(0, 0, 0, 0.15) 85%);
+  mask-image: radial-gradient(circle at 50% 25%, black 20%, rgba(0, 0, 0, 0.15) 85%);
+}
+
+#hero-right-visual:hover .animate-spin-smooth {
+  animation-duration: 25s;
+  transform: translateZ(0) scale(1.05);
+}
+
+/* Media query for rotating dashed ring on extremely small viewports under 350px */
+@media (max-width: 350px) {
+  #hero-right-visual .animate-spin-smooth {
+    border-width: 1px !important;
+    top: 0.5rem !important; /* inset-2 equals 0.5rem or 8px */
+    bottom: 0.5rem !important;
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+  }
+}
+
+
