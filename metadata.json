@@ -1,0 +1,6 @@
+{
+  "name": "Lengkang - Layanan Setor Sampah",
+  "description": "Platform pengelolaan sampah terpadu yang membantu mengolah sampah menjadi berkas bernilai tinggi, terinspirasi oleh Lengkang UI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
