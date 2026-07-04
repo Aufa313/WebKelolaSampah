@@ -8,7 +8,10 @@ require_once __DIR__ . '/config.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/backend/api.php', '', $path);
+$pos = strpos($path, 'api.php');
+if ($pos !== false) {
+    $path = substr($path, $pos + 7);
+}
 $path = trim($path, '/');
 
 // Route parsing
