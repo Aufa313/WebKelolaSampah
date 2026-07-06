@@ -30,7 +30,7 @@ try {
             
         case 'pricing':
             require_once __DIR__ . '/routes/pricing.php';
-            handlePricingRequest($method, $conn);
+            handlePricingRequest($method, $input, $conn);
             break;
             
         case 'leaderboard':
@@ -41,6 +41,31 @@ try {
         case 'user':
             require_once __DIR__ . '/routes/user.php';
             handleUserRequest($method, $input, $conn);
+            break;
+            
+        case 'pickups':
+            require_once __DIR__ . '/routes/pickups.php';
+            handlePickupsRequest($method, $input, $conn);
+            break;
+            
+        case 'transactions':
+            require_once __DIR__ . '/routes/transactions.php';
+            handleTransactionsRequest($method, $input, $conn);
+            break;
+            
+        case 'stats':
+            require_once __DIR__ . '/routes/stats.php';
+            handleStatsRequest($method, $conn);
+            break;
+            
+        case 'withdrawals':
+            require_once __DIR__ . '/routes/withdrawals.php';
+            handleWithdrawalsRequest($method, $input, $conn);
+            break;
+            
+        case 'notifications':
+            require_once __DIR__ . '/routes/notifications.php';
+            handleNotificationsRequest($method, $input, $conn);
             break;
             
         default:

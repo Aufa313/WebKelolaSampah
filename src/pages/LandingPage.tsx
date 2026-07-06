@@ -23,12 +23,14 @@ interface LandingPageProps {
   onRegister: () => void;
   onLogin: () => void;
   scrollToSection: (id: string) => void;
+  pricingData?: any;
 }
 
 export default function LandingPage({
   onRegister,
   onLogin,
   scrollToSection,
+  pricingData: externalPricingData,
 }: LandingPageProps) {
   // States for Interactive Estimator
   const [selectedCategory, setSelectedCategory] = useState("plastik");
@@ -43,10 +45,11 @@ export default function LandingPage({
     "weekly" | "monthly"
   >("weekly");
 
-  const selectedData = pricingData[selectedCategory] || pricingData.plastik;
-  const calculatedPoints = weight * selectedData.points;
-  const calculatedRupiah = weight * selectedData.rupiah;
-  const calculatedCO2 = (weight * selectedData.co2Factor).toFixed(1);
+  const activePricingData = externalPricingData || pricingData;
+  const selectedData = activePricingData[selectedCategory] || activePricingData.plastik;
+  const calculatedPoints = weight * (selectedData?.points || 0);
+  const calculatedRupiah = weight * (selectedData?.rupiah || 0);
+  const calculatedCO2 = (weight * (selectedData?.co2Factor || 0)).toFixed(1);
 
   const handlePickupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +106,7 @@ export default function LandingPage({
       <Features services={services} scrollToSection={scrollToSection} />
 
       {/* PRICING / CONVERSION PANEL */}
-      <Pricing />
+      <Pricing pricingData={activePricingData} />
 
       {/* INTERACTIVE SAMPAH-TO-VALUE CALCULATOR & ESTIMATOR */}
       <section

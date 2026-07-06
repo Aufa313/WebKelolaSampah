@@ -27,7 +27,7 @@ function handleAuthRequest($method, $input, $conn) {
     }
 
     // Query user from database
-    $query = "SELECT id, username, role, password_hash, created_at FROM users WHERE username = ?";
+    $query = "SELECT id, username, role, password_hash, registered_at AS created_at FROM users WHERE username = ?";
     $stmt = $conn->prepare($query);
     
     if (!$stmt) {

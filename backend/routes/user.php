@@ -21,7 +21,7 @@ function handleUserRequest($method, $input, $conn) {
             return;
         }
 
-        $query = "SELECT id, username, role, created_at FROM users WHERE id = ?";
+        $query = "SELECT id, username, role, registered_at AS created_at FROM users WHERE id = ?";
         $stmt = $conn->prepare($query);
         
         if (!$stmt) {
