@@ -2,10 +2,12 @@ import React from "react";
 import { pricingData } from "../../data/pricing";
 
 interface PricingProps {
-  // Optional: can accept custom pricingData if needed
+  pricingData?: any;
 }
 
-export default function Pricing({}: PricingProps) {
+export default function Pricing({ pricingData: externalPricingData }: PricingProps) {
+  const activePricing = externalPricingData || pricingData;
+
   return (
     <section
       id="pricing"
@@ -28,8 +30,8 @@ export default function Pricing({}: PricingProps) {
 
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {Object.keys(pricingData).map((key) => {
-            const item = pricingData[key];
+          {Object.keys(activePricing).map((key) => {
+            const item = activePricing[key];
             return (
               <div
                 key={key}

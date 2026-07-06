@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { 
+  fetchTransactions, 
+  fetchLeaderboard, 
+  requestWithdrawal, 
+  fetchNotifications, 
+  markNotificationRead 
+} from "../../services/api";
+import { 
   ArrowLeft, Award, HelpCircle, ArrowUpRight, ArrowDownLeft, 
   TrendingUp, Download, RefreshCw, Smartphone, Wallet, ShoppingBag,
-  Info, CheckCircle, AlertTriangle, ChevronRight, Scale, Leaf, Trash2, LogOut, Plus,
+  Info, CheckCircle, AlertTriangle, ChevronRight, Scale, Leaf, Trash2, LogOut, Plus, Bell, BookOpen,
   MapPin, Calendar, Clock, User, Map, Copy, ExternalLink, Building2
 } from "lucide-react";
 
@@ -22,6 +29,43 @@ interface DashboardWargaProps {
 }
 
 export default function DashboardWarga({ onBack }: DashboardWargaProps) {
+  const citizenUserId = parseInt(localStorage.getItem("lengkang_authenticated_user_id") || "3");
+  
+  // --- Premium Warga States ---
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showEduModal, setShowEduModal] = useState(false);
+
+  const loadNotifications = () => {
+    fetchNotifications(citizenUserId).then(res => {
+      if (res.ok && res.data) {
+        setNotifications(res.data);
+      }
+    });
+  };
+
+  const handleMarkNotificationsRead = () => {
+    markNotificationRead(undefined, citizenUserId).then(res => {
+      if (res.ok) {
+        loadNotifications();
+      }
+    });
+  };
+
+  useEffect(() => {
+    loadNotifications();
+    const notifInterval = setInterval(loadNotifications, 5000);
+    return () => clearInterval(notifInterval);
+  }, []);
+
+  // Gamifikasi Level & Badge logic
+  const getWargaLevel = (weight: number) => {
+    if (weight < 20) return { name: "Penyetor Pemula", level: 1, max: 20, badge: "🌱" };
+    if (weight < 50) return { name: "Ksatria Hijau", level: 2, max: 50, badge: "🌿" };
+    if (weight < 150) return { name: "Pejuang Daur Ulang", level: 3, max: 150, badge: "✨" };
+    return { name: "Pahlawan Bumi", level: 4, max: 1000, badge: "👑" };
+  };
+
   // Real live RW Sectors state loaded from localStorage with initial fallback
   const [rwSectors, setRwSectors] = useState<any[]>(() => {
     try {
@@ -152,7 +196,7 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
   }, []);
 
   // Real state for interactive dashboard simulation
-  const [balance, setBalance] = useState(384500);
+  const [balance, setBalance] = useState(0);
   const [totalWeight, setTotalWeight] = useState(142.5);
   const [incentivePreference, setIncentivePreference] = useState("Paket Sembako Bulanan");
   const [withdrawModal, setWithdrawModal] = useState(false);
@@ -329,62 +373,9 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
   
   
   // Mutations data
-  const [mutations, setMutations] = useState<Mutation[]>([
-    {
-      id: "C-10492",
-      date: "2026-06-16",
-      category: "Plastik Sektor Premium",
-      weight: 12.5,
-      type: "Masuk",
-      amount: 31250,
-      status: "Sukses"
-    },
-    {
-      id: "C-10440",
-      date: "2026-06-12",
-      category: "Kertas, Kardus & Karton",
-      weight: 22.0,
-      type: "Masuk",
-      amount: 39600,
-      status: "Sukses"
-    },
-    {
-      id: "C-10402",
-      date: "2026-06-08",
-      category: "Penarikan Saldo Tunai",
-      weight: 0,
-      type: "Keluar",
-      amount: 50000,
-      status: "Sukses"
-    },
-    {
-      id: "C-10312",
-      date: "2026-06-05",
-      category: "Layanan E-Waste Khusus",
-      weight: 8.0,
-      type: "Masuk",
-      amount: 64000,
-      status: "Sukses"
-    },
-    {
-      id: "C-10291",
-      date: "2026-06-01",
-      category: "Sampah Organik Bersih",
-      weight: 100.0,
-      type: "Masuk",
-      amount: 100000,
-      status: "Sukses"
-    },
-    {
-      id: "C-10280",
-      date: "2026-05-28",
-      category: "Penukaran Paket Sembako",
-      weight: 0,
-      type: "Keluar",
-      amount: 75000,
-      status: "Pending Admin"
-    }
-  ]);
+  const [mutations, setMutations] = useState<Mutation[]>([]);
+  const userLevelInfo = getWargaLevel(totalWeight);
+
 
   // Form states for adding simulated mutation to show off instant system feedback
   const [simCategory, setSimCategory] = useState("Plastik Sektor Premium");
@@ -444,36 +435,59 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
       return;
     }
 
-    const withdrawMutation: Mutation = {
-      id: "W-" + Math.floor(10000 + Math.random() * 90000),
-      date: new Date().toISOString().split("T")[0],
-      category: withdrawType === "Uang" ? "Penarikan Saldo Tunai" : "Penukaran Paket Sembako",
-      weight: 0,
-      type: "Keluar",
-      amount: amt,
-      status: "Pending Admin"
-    };
-
-    setMutations([withdrawMutation, ...mutations]);
-    setBalance(prev => prev - amt);
-    setWithdrawAmount("");
-    setWithdrawalSuccess(true);
-
-    // Auto success status simulation
-    const targetId = withdrawMutation.id;
-    setTimeout(() => {
-      setWithdrawalSuccess(false);
-      setWithdrawModal(false);
-      
-      // Auto-resolve to Sukses after 5 seconds
-      setTimeout(() => {
-        setMutations(current => 
-          current.map(m => m.id === targetId ? { ...m, status: "Sukses" } : m)
-        );
-      }, 5000);
-
-    }, 3000);
+    requestWithdrawal(citizenUserId, amt, withdrawType).then(res => {
+      if (res.ok) {
+        setWithdrawalSuccess(true);
+        setBalance(prev => prev - amt);
+        setWithdrawAmount("");
+        
+        setTimeout(() => {
+          setWithdrawalSuccess(false);
+          setWithdrawModal(false);
+          loadTransactionsFromDB();
+        }, 2000);
+      } else {
+        alert("Gagal melakukan penarikan: " + res.error);
+      }
+    });
   };
+
+  const loadTransactionsFromDB = () => {
+    fetchTransactions(citizenUserId).then((res) => {
+      if (res.ok && res.data) {
+        setBalance(res.data.balance);
+        const mapped = res.data.history.map((tx: any) => ({
+          id: "TX-" + tx.id,
+          date: tx.created_at.split(" ")[0],
+          category: tx.description || (tx.transaction_type === "Masuk" ? "Setor Sampah" : "Pencairan"),
+          weight: 0,
+          type: tx.transaction_type,
+          amount: parseFloat(tx.amount),
+          status: "Sukses"
+        }));
+        setMutations(mapped);
+      }
+    });
+  };
+
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const loadLeaderboardFromDB = () => {
+    fetchLeaderboard().then((res) => {
+      if (res.ok && res.data) {
+        setLeaderboardData(res.data);
+      }
+    });
+  };
+
+  useEffect(() => {
+    loadTransactionsFromDB();
+    loadLeaderboardFromDB();
+    const interval = setInterval(() => {
+      loadTransactionsFromDB();
+      loadLeaderboardFromDB();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in" id="dashboard-warga-view">

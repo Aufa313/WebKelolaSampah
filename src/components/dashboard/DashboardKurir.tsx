@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import KurirStatsWidget from "./KurirStatsWidget";
+import { fetchPickups, updatePickup } from "../../services/api";
 
 interface DashboardKurirProps {
   onBack: () => void;
@@ -195,15 +196,22 @@ export default function DashboardKurir({ onBack, courierEmail }: DashboardKurirP
     }
   };
 
+  const courierUserId = parseInt(localStorage.getItem("lengkang_authenticated_user_id") || "2");
+  const loadPickupsFromDB = () => {
+    fetchPickups({ courier_id: courierUserId }).then((res) => {
+      if (res.ok && res.data) {
+        setPickups(res.data);
+      }
+    });
+  };
+
   useEffect(() => {
     loadLocalStorageData();
-    
-    // Listen for storage events to synchronize in multiple tabs immediately
-    const handleStorageChange = () => {
-      loadLocalStorageData();
+    loadPickupsFromDB();
+    const interval = setInterval(loadPickupsFromDB, 3000);
+    return () => {
+      clearInterval(interval);
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
   }, [courierEmail]);
 
   // Handle Obstacle Bottom Sheet Submission
@@ -212,20 +220,17 @@ export default function DashboardKurir({ onBack, courierEmail }: DashboardKurirP
     if (!selectedPickupForObstacle) return;
 
     try {
-      const updatedPickups = pickups.map((item) => {
-        if (item.id === selectedPickupForObstacle.id) {
-          return {
-            ...item,
-            status: "Kendala Lapangan",
-            obstacleReason,
-            obstacleNote: obstacleNote.trim()
-          };
+      updatePickup(selectedPickupForObstacle.id, {
+        status: "Kendala Lapangan",
+        notes: `${obstacleReason}: ${obstacleNote.trim()}`
+      }).then((res) => {
+        if (res.ok) {
+          loadPickupsFromDB();
+          setSelectedPickupForObstacle(null);
+        } else {
+          alert("Gagal memperbarui kendala: " + (res.error || "Kesalahan server"));
         }
-        return item;
       });
-
-      localStorage.setItem("lengkang_resident_pickups", JSON.stringify(updatedPickups));
-      setPickups(updatedPickups);
 
       // Create Admin notice for obstacle
       const adminNotifsStr = localStorage.getItem("lengkang_admin_live_notifications");
@@ -281,21 +286,19 @@ export default function DashboardKurir({ onBack, courierEmail }: DashboardKurirP
 
     try {
       const parsedWeight = parseFloat(actualWeightInput.toString()) || 0;
-      
-      // 1. Update Resident Pickups status to "Selesai"
-      const updatedPickups = pickups.map((item) => {
-        if (item.id === selectedPickupForWeigh.id) {
-          return {
-            ...item,
-            status: "Selesai",
-            actualWeight: parsedWeight,
-            completedAt: new Date().toLocaleDateString("id-ID", { hour: "2-digit", minute: "2-digit" })
-          };
+
+      updatePickup(selectedPickupForWeigh.id, {
+        status: "Selesai",
+        actual_weight: parsedWeight,
+        notes: "Timbangan kurir"
+      }).then((res) => {
+        if (res.ok) {
+          loadPickupsFromDB();
+          setIsWeighInOpen(false);
+        } else {
+          alert("Gagal memperbarui timbangan: " + (res.error || "Kesalahan server"));
         }
-        return item;
       });
-      localStorage.setItem("lengkang_resident_pickups", JSON.stringify(updatedPickups));
-      setPickups(updatedPickups);
 
       // 2. Insert into "lengkang_pending_deposits" for Admin review
       const pendingDepsStr = localStorage.getItem("lengkang_pending_deposits");

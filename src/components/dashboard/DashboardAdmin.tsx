@@ -11,6 +11,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from "recharts";
+import { fetchStats, fetchWithdrawals, updateWithdrawal } from "../../services/api";
 
 interface PendingDeposit {
   id: string;
@@ -217,6 +218,38 @@ const defaultRwSectors = [
 ];
 
 export default function DashboardAdmin({ onBack, adminEmail }: DashboardAdminProps) {
+  // --- Stats & Withdrawals States ---
+  const [adminStats, setAdminStats] = useState({ total_warga: 0, total_pengepul: 6, total_berat: 0, saldo_beredar: 0 });
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+
+  const loadStatsAndWithdrawals = () => {
+    fetchStats().then(res => {
+      if (res.ok && res.data) setAdminStats(res.data);
+    });
+    fetchWithdrawals().then(res => {
+      if (res.ok && res.data) setWithdrawals(res.data);
+    });
+  };
+
+  useEffect(() => {
+    loadStatsAndWithdrawals();
+    const interval = setInterval(loadStatsAndWithdrawals, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleWithdrawalAction = (id: number, status: "Disetujui" | "Ditolak") => {
+    if (window.confirm(`Apakah Anda yakin ingin ${status} penarikan ini?`)) {
+      updateWithdrawal(id, status).then(res => {
+        if (res.ok) {
+          alert(`Penarikan ${status}!`);
+          loadStatsAndWithdrawals();
+        } else {
+          alert("Gagal memproses penarikan: " + res.error);
+        }
+      });
+    }
+  };
+
   // --- RW Sectors Live State & Synchronization ---
   const [sectors, setSectors] = useState<any[]>(() => {
     try {
@@ -1223,7 +1256,23 @@ export default function DashboardAdmin({ onBack, adminEmail }: DashboardAdminPro
   const [selectedReportCategory, setSelectedReportCategory] = useState("Semua");
 
   // --- 6. Laporan Keuangan State & Logic ---
-  const [ledgerEntries, setLedgerEntries] = useState(() => {
+  
+  const exportLedgerToCSV = () => {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "ID,Tanggal,Tipe,Kategori,Deskripsi,Jumlah (Rp)\n";
+    ledgerEntries.forEach(entry => {
+      const row = `${entry.id},${entry.date},${entry.type},${entry.category},"${entry.description.replace(/"/g, '""')}",${entry.amount}`;
+      csvContent += row + "\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Buku_Besar_Koperasi_Lengkang_Clean_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+const [ledgerEntries, setLedgerEntries] = useState(() => {
     const defaultLedger = [
       { id: "TX-1102", date: "2026-06-18", type: "Pengeluaran", category: "Pencairan Warga", description: "Pencairan Tabungan Ibu Sumarni (RW 02) dlm Sembako", amount: 54000 },
       { id: "TX-1101", date: "2026-06-18", type: "Pemasukan", category: "Penjualan B2B", description: "Penjualan 278Kg Kardus & Plastik ke Pabrik Daur Ulang", amount: 1390000 },
@@ -3032,6 +3081,64 @@ export default function DashboardAdmin({ onBack, adminEmail }: DashboardAdminPro
         </div>
       </div>
 
+      {/* TABEL WITHDRAWAL BARU */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-10 order-7">
+        <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-serif font-bold text-slate-800">Persetujuan Penarikan Saldo (Withdrawals)</h3>
+            <p className="text-sm text-slate-500 font-sans mt-1">Daftar pengajuan pencairan saldo warga.</p>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-100/50 text-[11px] text-slate-500 font-sans">
+              <tr>
+                <th className="px-5 py-4 font-semibold uppercase tracking-wider">ID</th>
+                <th className="px-5 py-4 font-semibold uppercase tracking-wider">Warga</th>
+                <th className="px-5 py-4 font-semibold uppercase tracking-wider text-right">Nominal</th>
+                <th className="px-5 py-4 font-semibold uppercase tracking-wider">Jenis</th>
+                <th className="px-5 py-4 font-semibold uppercase tracking-wider text-center">Status</th>
+                <th className="px-5 py-4 font-semibold uppercase tracking-wider text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-150 font-sans">
+              {withdrawals.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-6 text-slate-400">Tidak ada pengajuan penarikan saat ini.</td></tr>
+              ) : (
+                withdrawals.map((w) => (
+                  <tr key={w.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-4 font-mono text-sm text-slate-600">WTH-{w.id}</td>
+                    <td className="px-5 py-4 font-medium text-slate-800">{w.warga_name}</td>
+                    <td className="px-5 py-4 text-right font-mono font-bold text-emerald-700">Rp {parseFloat(w.amount).toLocaleString()}</td>
+                    <td className="px-5 py-4 text-slate-600">{w.withdrawal_type}</td>
+                    <td className="px-5 py-4 text-center">
+                      <span className={`text-xs font-bold px-2 py-1 rounded ${
+                        w.status === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 
+                        w.status === 'Ditolak' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {w.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-center">
+                      {w.status === 'Pending' && (
+                        <div className="flex justify-center space-x-2">
+                          <button onClick={() => handleWithdrawalAction(w.id, "Disetujui")} className="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200">
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleWithdrawalAction(w.id, "Ditolak")} className="p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* SECTION: REAL-TIME GPS TRACKING & TELEMETRY */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6 text-left order-8" id="courier-gps-tracking-panel">
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 mb-6 gap-3">
@@ -4023,7 +4130,19 @@ export default function DashboardAdmin({ onBack, adminEmail }: DashboardAdminPro
           {/* COLUMN 1: BUKU KAS UTAMA (LEDGER ENTRIES LIST) */}
           <div className="lg:col-span-8 space-y-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2">
+              
+            <div className="flex justify-between items-center w-full mb-2">
               <span className="font-serif font-bold text-sm text-slate-700 block">Buku Kas Harian (General Ledger)</span>
+              <button
+                onClick={exportLedgerToCSV}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#008444] text-white rounded-xl text-xs font-bold font-sans hover:bg-[#006633] transition shadow-xs cursor-pointer"
+                title="Ekspor Data ke Excel/CSV"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Ekspor CSV</span>
+              </button>
+            </div>
+
               
               {/* Filter and search controls */}
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">

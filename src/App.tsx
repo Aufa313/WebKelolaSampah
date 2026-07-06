@@ -5,8 +5,19 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import LandingPage from "./pages/LandingPage";
 import DashboardPage from "./pages/DashboardPage";
+import { fetchPricing } from "./services/api";
 
 export default function App() {
+  const [pricing, setPricing] = useState<any>(null);
+
+  useEffect(() => {
+    fetchPricing().then((res) => {
+      if (res.ok && res.data) {
+        setPricing(res.data);
+      }
+    });
+  }, []);
+
   const [activeSection, setActiveSection] = useState("home");
   const [currentView, setCurrentView] = useState<"landing" | "dashboard">(
     "landing"
@@ -229,6 +240,7 @@ export default function App() {
             onRegister={() => setIsRegisterModalOpen(true)}
             onLogin={handleOpenDashboard}
             scrollToSection={scrollToSection}
+            pricingData={pricing}
           />
           <Footer />
         </>

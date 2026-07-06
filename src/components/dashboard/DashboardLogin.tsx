@@ -7,6 +7,7 @@ import {
   Lock,
   CheckCircle2,
 } from "lucide-react";
+import { login } from "../../services/api";
 
 interface DashboardLoginProps {
   onBack: () => void;
@@ -53,23 +54,24 @@ export default function DashboardLogin({
       return;
     }
 
-    if (role === "admin" && password !== "123456") {
-      setErrorMsg("Password admin salah. Gunakan 123456.");
-      return;
-    }
-    if (role === "kurir" && password !== "554433") {
-      setErrorMsg("Password kurir salah. Gunakan 554433.");
-      return;
-    }
-
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSuccessAuth(true);
-      setTimeout(() => {
-        onLoginSuccess(username.trim(), role);
-      }, 1000);
-    }, 1500);
+    login(username.trim(), password)
+      .then((result) => {
+        setIsSubmitting(false);
+        if (result.ok && result.data) {
+          localStorage.setItem("lengkang_authenticated_user_id", String(result.data.id));
+          setSuccessAuth(true);
+          setTimeout(() => {
+            onLoginSuccess(result.data!.username, result.data!.role);
+          }, 1000);
+        } else {
+          setErrorMsg(result.error || "Login gagal.");
+        }
+      })
+      .catch((err) => {
+        setIsSubmitting(false);
+        setErrorMsg("Terjadi kesalahan jaringan.");
+      });
   };
 
   const handleQuickFill = () => {
