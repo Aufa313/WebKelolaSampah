@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import AnimatedCounter from "../common/AnimatedCounter";
+import AIWasteClassifierModal from "../common/AIWasteClassifierModal";
+import LeaderboardModal from "../common/LeaderboardModal";
 import { 
   fetchTransactions, 
   fetchLeaderboard, 
@@ -11,7 +14,7 @@ import {
   ArrowLeft, Award, HelpCircle, ArrowUpRight, ArrowDownLeft, 
   TrendingUp, Download, RefreshCw, Smartphone, Wallet, ShoppingBag,
   Info, CheckCircle, AlertTriangle, ChevronRight, Scale, Leaf, Trash2, LogOut, Plus, Bell, BookOpen,
-  MapPin, Calendar, Clock, User, Map, Copy, ExternalLink, Building2
+  MapPin, Calendar, Clock, User, Map, Copy, ExternalLink, Building2, Sparkles, Trophy
 } from "lucide-react";
 
 interface Mutation {
@@ -35,6 +38,8 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showEduModal, setShowEduModal] = useState(false);
+  const [showAIScanModal, setShowAIScanModal] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
 
   const loadNotifications = () => {
     fetchNotifications(citizenUserId).then(res => {
@@ -668,6 +673,47 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
         )}
       </div>
 
+      {/* SEKSI BANNER FITUR AI & GAMIFIKASI DEDIKASI WARGA */}
+      <div className="bg-gradient-to-r from-emerald-800 via-teal-700 to-green-700 rounded-3xl p-6 shadow-xl text-white mb-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-emerald-500/30">
+        <div className="absolute -right-12 -top-12 w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="p-3.5 bg-white/20 backdrop-blur-md rounded-2xl border border-white/20 shadow-inner shrink-0">
+            <Sparkles className="w-8 h-8 text-yellow-300 animate-pulse" />
+          </div>
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/30 border border-emerald-300/30 text-emerald-100 text-[11px] font-bold mb-1">
+              ✨ Fitur Eksklusif Warga Digital
+            </div>
+            <h3 className="text-xl font-bold tracking-tight">AI Klasifikasi Foto Sampah Cerdas</h3>
+            <p className="text-emerald-100 text-xs mt-1 max-w-xl">
+              Bingung jenis atau poin sampah Anda? Unggah foto sampah Anda dan AI Gemini akan mendeteksi jenis material, estimasi berat, poin, serta panduan daur ulang secara otomatis!
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0 relative z-10 w-full md:w-auto">
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setShowAIScanModal(true)}
+            className="flex-1 md:flex-none px-5 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-500 text-amber-950 font-black text-xs shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 fill-amber-950" />
+            <span>Mulai Scan AI Foto Sampah</span>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setShowLeaderboardModal(true)}
+            className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Trophy className="w-4 h-4 text-amber-300" />
+            <span>Papan Peringkat</span>
+          </motion.button>
+        </div>
+      </div>
+
       {/* 1. KARTU SALDO UTAMA & TOP STATS (Grid 1 md:3) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 scroll-mt-24" id="top-stats-cards">
         
@@ -686,7 +732,7 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
             </span>
             <div className="flex items-baseline space-x-1.5 mt-2">
               <span className="text-3xl font-bold tracking-tight font-sans">
-                Rp {balance.toLocaleString()}
+                <AnimatedCounter value={balance} prefix="Rp " />
               </span>
               <span className="text-xs text-emerald-100 font-mono">Bumi-ID</span>
             </div>
@@ -729,7 +775,7 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
             </div>
             <div className="flex items-baseline space-x-1 text-slate-800 mt-2">
               <span className="text-3xl font-bold block text-neutral-dark font-sans">
-                {totalWeight} <span className="text-lg font-sans font-medium text-slate-400">Kg</span>
+                <AnimatedCounter value={totalWeight} /> <span className="text-lg font-sans font-medium text-slate-400">Kg</span>
               </span>
             </div>
           </div>
@@ -2133,6 +2179,21 @@ export default function DashboardWarga({ onBack }: DashboardWargaProps) {
         </div>
       )}
 
+      {/* Modals for AI Scan & Leaderboard */}
+      <AIWasteClassifierModal
+        isOpen={showAIScanModal}
+        onClose={() => setShowAIScanModal(false)}
+        onApplyResult={(result) => {
+          setPCategory(result.category === "Plastik" ? "Plastik PET Gelas & Botol" : result.category === "Kertas" ? "Kardus Kering Bersih" : result.category === "Logam" ? "Kaleng Aluminium Bersih" : "Sampah Organik Terpilah");
+          setPWeight(result.estimatedWeightKg.toString());
+          setPickupFormOpen(true);
+        }}
+      />
+
+      <LeaderboardModal
+        isOpen={showLeaderboardModal}
+        onClose={() => setShowLeaderboardModal(false)}
+      />
     </div>
   );
 }

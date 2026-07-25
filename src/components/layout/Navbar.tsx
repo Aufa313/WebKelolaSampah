@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Phone, Mail, Search, Menu, X, Leaf, ChevronRight, LogOut, ShieldAlert, Award, ArrowUp } from "lucide-react";
+import { Phone, Mail, Search, Menu, X, Leaf, ChevronRight, LogOut, ShieldAlert, Award, ArrowUp, Sparkles, Trophy } from "lucide-react";
 import { motion } from "motion/react";
+import AIWasteClassifierModal from "../common/AIWasteClassifierModal";
+import LeaderboardModal from "../common/LeaderboardModal";
 
 interface NavbarProps {
   onNavigate: (sectionId: string) => void;
@@ -10,6 +12,8 @@ interface NavbarProps {
   onLogout?: () => void;
   onOpenRegister?: () => void;
   onOpenLogin?: () => void;
+  onOpenAIScan?: () => void;
+  onOpenLeaderboard?: () => void;
 }
 
 export default function Navbar({ 
@@ -19,12 +23,16 @@ export default function Navbar({
   userRole = "warga", 
   onLogout,
   onOpenRegister,
-  onOpenLogin
+  onOpenLogin,
+  onOpenAIScan,
+  onOpenLeaderboard
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollPercent, setScrollPercent] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [isAIScanOpenLocal, setIsAIScanOpenLocal] = useState(false);
+  const [isLeaderboardOpenLocal, setIsLeaderboardOpenLocal] = useState(false);
 
   useEffect(() => {
     const handleScrollEffects = () => {
@@ -62,7 +70,7 @@ export default function Navbar({
     { label: "Home", id: "home" },
     { label: "Layanan", id: "layanan" },
     { label: "Setor Sampah", id: "setor-sampah" },
-    { label: "Kemitraan", id: "kemitraan" },
+    // { label: "Kemitraan", id: "kemitraan" },
     { label: "Hubungi Kami", id: "kontak" },
   ];
 
@@ -97,12 +105,18 @@ export default function Navbar({
   const handleNavClick = (id: string) => {
     onNavigate(id);
     setIsMobileMenuOpen(false);
+    setTimeout(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
   };
 
   return (
-    <header className={`w-full sticky top-0 transition-all duration-300 bg-white ${
+    <header className={`w-full sticky top-0 transition-all duration-300 bg-white/95 backdrop-blur-md ${
       isLoggedIn && userRole === "admin" ? "z-[120]" : "z-50"
-    } ${isScrolled ? "shadow-md" : ""}`}>
+    } ${isScrolled ? "shadow-md bg-white/90 border-b border-slate-100" : ""}`}>
       {/* 1. TOP BAR (Bilah Atas) - Hidden on mobile and smoothly collapses on scroll to prevent layout jumps */}
       <div 
         id="navbar-top-bar"
@@ -121,7 +135,7 @@ export default function Navbar({
             userRole === "admin" ? (
               <span className="flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 text-amber-250 animate-pulse shrink-0" />
-                <strong>Sistem Administrasi Pusat Lengkang UI</strong> - Mode Keamanan Komoditas & Anti-Fraud Aktif.
+                <strong>Sistem Administrasi Pusat WebSampah</strong> - Mode Keamanan Komoditas & Anti-Fraud Aktif.
               </span>
             ) : (
               <span className="flex items-center gap-1.5">
@@ -138,8 +152,8 @@ export default function Navbar({
             <span>📞 +62 812 3456 7890</span>
           </a>
           <span className="w-px h-3 bg-white/20"></span>
-          <a href="mailto:info@lengkangui.com" className="flex items-center space-x-1 hover:text-white transition-colors">
-            <span>✉️ info@lengkangui.com</span>
+          <a href="mailto:lengkangw@gmail.com" className="flex items-center space-x-1 hover:text-white transition-colors">
+            <span>✉️ lengkangw@gmail.com</span>
           </a>
         </div>
       </div>
@@ -147,10 +161,10 @@ export default function Navbar({
       {/* 2. MAIN NAV (Bilah Utama) */}
       <nav
         id="navbar-main"
-        className={`w-full bg-white transition-[padding,background-color,border-color] duration-300 ${
+        className={`w-full transition-[padding,background-color,border-color] duration-300 ${
           isScrolled 
-            ? "bg-white py-3 border-b border-slate-100 shadow-sm" 
-            : "relative py-4 md:py-6"
+            ? "py-3 shadow-xs" 
+            : "relative py-4 md:py-5"
         }`}
       >
         {/* Dynamic Scroll Progress Bar */}
@@ -162,23 +176,25 @@ export default function Navbar({
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Logo & Role Badge Badge */}
-          <div 
+          {/* Logo & Role Badge */}
+          <motion.div 
             id="navbar-logo"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => handleNavClick(isLoggedIn ? (userRole === "admin" ? "dashboard-admin-layer" : "dashboard-warga-view") : "home")}
-            className="flex items-center space-x-2.5 cursor-pointer group text-left"
+            className="flex items-center space-x-2.5 cursor-pointer group text-left shrink-0 mr-4"
           >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-xs transition-colors ${
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-xs transition-colors shrink-0 ${
               isLoggedIn && userRole === "admin" ? "bg-amber-600 group-hover:bg-amber-700" : "bg-[#008444] group-hover:bg-[#006633]"
             }`}>
-              <span className="text-white font-bold text-lg font-sans">L</span>
+              <span className="text-white font-bold text-lg font-sans">W</span>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className={`text-xl md:text-2xl font-bold tracking-tight select-none transition-colors ${
                   isLoggedIn && userRole === "admin" ? "text-amber-805" : "text-[#008444]"
                 }`} style={{ fontFamily: "Georgia, serif" }}>
-                  Lengkang UI
+                  WebSampah
                 </span>
                 {isLoggedIn && (
                   <span className={`text-[8.5px] font-black px-1.5 py-0.2 rounded font-mono ${
@@ -191,18 +207,20 @@ export default function Navbar({
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Nav Links - Desktop */}
-          <div id="navbar-links" className="hidden lg:flex items-center space-x-6 lg:space-x-8">
+          <div id="navbar-links" className="hidden lg:flex items-center space-x-5 lg:space-x-7 shrink-0">
             {navItems.map((item) => {
               const isSelected = activeSection === item.id;
               return (
-                <button
+                <motion.button
                   key={item.id}
                   id={`nav-item-${item.id}`}
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.94 }}
                   onClick={() => handleNavClick(item.id)}
-                  className={`text-xs lg:text-sm font-semibold transition-colors cursor-pointer py-1 relative whitespace-nowrap ${
+                  className={`text-xs lg:text-sm font-semibold transition-colors cursor-pointer py-1.5 relative whitespace-nowrap px-1 ${
                     isSelected
                       ? isLoggedIn && userRole === "admin" ? "text-amber-805" : "text-[#008444]"
                       : "text-slate-600 hover:text-slate-900"
@@ -212,24 +230,49 @@ export default function Navbar({
                   {isSelected && (
                     <motion.span 
                       layoutId={isLoggedIn ? (userRole === "admin" ? "activeNavIndicatorAdmin" : "activeNavIndicatorWarga") : "activeNavIndicatorPublic"}
-                      transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${
-                        isLoggedIn && userRole === "admin" ? "bg-amber-600" : "bg-[#008444]"
+                        isLoggedIn && userRole === "admin" ? "bg-amber-600 shadow-[0_0_8px_rgba(217,119,6,0.6)]" : "bg-[#008444] shadow-[0_0_8px_rgba(0,132,68,0.6)]"
                       }`} 
                     />
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>
 
           {/* Action Zone - Desktop */}
-          <div id="navbar-actions" className="flex items-center space-x-4">
+          <div id="navbar-actions" className="flex items-center space-x-3 shrink-0">
+            {/* AI Waste Classifier & Leaderboard Quick Buttons - ONLY FOR LOGGED IN WARGA */}
+            {isLoggedIn && userRole === "warga" && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onOpenAIScan ? onOpenAIScan() : setIsAIScanOpenLocal(true)}
+                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs px-3.5 py-2 rounded-xl font-bold shadow-md shadow-emerald-600/20 hover:shadow-emerald-600/40 transition-all cursor-pointer ring-2 ring-emerald-400/30"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-pulse" />
+                  <span>Scan AI</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onOpenLeaderboard ? onOpenLeaderboard() : setIsLeaderboardOpenLocal(true)}
+                  className="hidden md:inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 text-xs px-3 py-2 rounded-xl font-bold transition-all cursor-pointer"
+                >
+                  <Trophy className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Peringkat</span>
+                </motion.button>
+              </>
+            )}
+
             <div className="hidden xl:flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-primary transition-colors">
               <input 
                 type="text" 
                 placeholder={isLoggedIn ? "Cari database..." : "Cari info pengolahan..."} 
-                className="bg-transparent text-xs text-neutral-dark focus:outline-none w-36"
+                className="bg-transparent text-xs text-neutral-dark focus:outline-none w-32"
               />
               <Search className="w-3.5 h-3.5 text-slate-400" />
             </div>
@@ -316,7 +359,7 @@ export default function Navbar({
                 </div>
                 <div>
                   <span className="text-lg font-serif font-black text-neutral-dark">
-                    Lengkang UI
+                    WebSampah
                   </span>
                   {isLoggedIn && (
                     <span className="block text-[8px] font-bold font-mono text-slate-400 mt-0.5 leading-none">
@@ -339,21 +382,26 @@ export default function Navbar({
               {navItems.map((item) => {
                 const isSelected = activeSection === item.id;
                 return (
-                  <button
+                  <motion.button
                     key={item.id}
                     id={`nav-mobile-${item.id}`}
+                    whileTap={{ scale: 0.96 }}
                     onClick={() => handleNavClick(item.id)}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors text-left ${
+                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all text-left font-semibold ${
                       isSelected
-                        ? isLoggedIn && userRole === "admin"
-                          ? "bg-amber-50 text-amber-855 font-bold"
-                          : "bg-emerald-50/70 text-primary font-bold"
-                        : "text-slate-600 hover:bg-slate-50 font-medium text-xs"
+                        ? isLoggedIn && userRole === "admin" 
+                          ? "bg-amber-50 text-amber-900 border border-amber-200" 
+                          : "bg-emerald-50 text-emerald-900 border border-emerald-200 font-bold"
+                        : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
                     <span>{item.label}</span>
-                    <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? "text-primary translate-x-0.5" : "text-slate-300"}`} />
-                  </button>
+                    {isSelected ? (
+                      <span className={`w-2 h-2 rounded-full ${isLoggedIn && userRole === "admin" ? "bg-amber-600" : "bg-[#008444]"}`} />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-300" />
+                    )}
+                  </motion.button>
                 );
               })}
             </div>
@@ -430,21 +478,19 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* 4. FLOATING BACK TO TOP BUTTON */}
-      {showBackToTop && (
-        <button
-          id="scroll-to-top-button"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className={`fixed bottom-6 right-6 p-3.5 rounded-full shadow-lg border text-white transition-all duration-350 hover:scale-110 active:scale-95 z-50 flex items-center justify-center cursor-pointer ${
-            isLoggedIn && userRole === "admin"
-              ? "bg-amber-600 hover:bg-amber-700 border-amber-500 shadow-amber-600/25"
-              : "bg-emerald-600 hover:bg-emerald-700 border-emerald-500 shadow-emerald-600/25"
-          } transition-all`}
-          aria-label="Back to top"
-        >
-          <ArrowUp className="w-5 h-5 animate-bounce" />
-        </button>
-      )}
+      {/* AI Waste Classifier & Leaderboard Modals */}
+      <AIWasteClassifierModal
+        isOpen={isAIScanOpenLocal}
+        onClose={() => setIsAIScanOpenLocal(false)}
+        onApplyResult={(res) => {
+          handleNavClick("setor-sampah");
+        }}
+      />
+
+      <LeaderboardModal
+        isOpen={isLeaderboardOpenLocal}
+        onClose={() => setIsLeaderboardOpenLocal(false)}
+      />
     </header>
   );
 }

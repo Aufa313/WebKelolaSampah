@@ -4903,7 +4903,7 @@ const [ledgerEntries, setLedgerEntries] = useState(() => {
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 className="font-serif font-black text-slate-800 text-lg">Bukti Foto Timbangan AI</h3>
-                <span className="text-slate-450 text-[11px] font-sans">Verifikasi anti-manipulasi visual Lengkang UI</span>
+                <span className="text-slate-450 text-[11px] font-sans">Verifikasi anti-manipulasi visual</span>
               </div>
               <button 
                 onClick={() => setLightboxImage(null)}
