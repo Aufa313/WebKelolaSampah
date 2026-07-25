@@ -34,9 +34,7 @@ export default function App() {
   const [regFormName, setRegFormName] = useState("");
   const [regFormPhone, setRegFormPhone] = useState("");
   const [regFormAddress, setRegFormAddress] = useState("");
-  const [regFormIncentive, setRegFormIncentive] = useState<
-    "Sembako" | "Uang Tunai"
-  >("Sembako");
+  const [regFormPassword, setRegFormPassword] = useState("");
   const [regFormSuccess, setRegFormSuccess] = useState(false);
 
   const handleOpenDashboard = () => {
@@ -101,7 +99,7 @@ export default function App() {
       "home",
       "layanan",
       "setor-sampah",
-      "kemitraan",
+      // "kemitraan",
       "kontak",
     ];
     if (currentView === "dashboard" && landingSections.includes(id)) {
@@ -139,7 +137,7 @@ export default function App() {
         "home",
         "layanan",
         "setor-sampah",
-        "kemitraan",
+        // "kemitraan",
         "kontak",
       ];
       if (isLoggedIn) {
@@ -328,9 +326,6 @@ export default function App() {
                       <p className="text-xs text-slate-600">
                         <strong>HP / WA:</strong> {regFormPhone}
                       </p>
-                      <p className="text-xs text-slate-600">
-                        <strong>Opsi Insentif:</strong> {regFormIncentive}
-                      </p>
                     </div>
                     <button
                       onClick={() => {
@@ -339,6 +334,7 @@ export default function App() {
                         setRegFormName("");
                         setRegFormPhone("");
                         setRegFormAddress("");
+                        setRegFormPassword("");
                       }}
                       className="bg-[#008444] text-white font-bold py-2.5 px-6 rounded-xl hover:bg-[#006633] transition-all text-xs cursor-pointer shadow-sm"
                     >
@@ -352,7 +348,8 @@ export default function App() {
                       if (
                         !regFormName.trim() ||
                         !regFormPhone.trim() ||
-                        !regFormAddress.trim()
+                        !regFormAddress.trim() ||
+                        !regFormPassword.trim()
                       ) {
                         alert("Harap lengkapi semua bidang isian formulir.");
                         return;
@@ -366,7 +363,7 @@ export default function App() {
                         name: regFormName,
                         phone: regFormPhone,
                         address: regFormAddress,
-                        incentiveChoice: regFormIncentive,
+                        password: regFormPassword,
                         timestamp: new Date().toISOString(),
                       };
 
@@ -432,29 +429,17 @@ export default function App() {
                     </div>
 
                     <div className="space-y-1.5 text-left">
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
-                        Opsi Insentif Penukaran
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide font-sans">
+                        Kata Sandi / Password
                       </label>
-                      <select
-                        value={regFormIncentive}
-                        onChange={(e) =>
-                          setRegFormIncentive(
-                            e.target.value as "Sembako" | "Uang Tunai"
-                          )
-                        }
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs text-slate-800 outline-none focus:border-[#008444] focus:ring-1 focus:ring-primary/40 transition"
-                      >
-                        <option value="Sembako">
-                          Sembako (Beras, Minyak Goreng, Gula, dll)
-                        </option>
-                        <option value="Uang Tunai">
-                          Uang Tunai (Transfer / Cair Tunai Fisik)
-                        </option>
-                      </select>
-                      <p className="text-[10px] text-slate-400 mt-1">
-                        Anda dapat mengubah opsi pilihan insentif ini kapan saja
-                        melalui dashboard portal warga.
-                      </p>
+                      <input
+                        type="password"
+                        required
+                        value={regFormPassword}
+                        onChange={(e) => setRegFormPassword(e.target.value)}
+                        placeholder="Buat kata sandi akun..."
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs text-slate-800 outline-none focus:border-[#008444] focus:ring-1 focus:ring-primary/20 transition font-sans"
+                      />
                     </div>
 
                     <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
@@ -465,6 +450,7 @@ export default function App() {
                           setRegFormName("");
                           setRegFormPhone("");
                           setRegFormAddress("");
+                          setRegFormPassword("");
                         }}
                         className="bg-white border border-slate-200 text-slate-600 font-bold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition cursor-pointer text-xs"
                       >
